@@ -2,18 +2,18 @@ import pytest
 
 from nanoevent import Dispatcher
 
-def create_event_handler(text: str):
-    def handler(event_arg: dict):
+def create_event_listener(text: str):
+    def listener(event_arg: dict):
         event_arg.append(text)
 
-    return handler
+    return listener
 
-def test_dispatch_will_trigger_handler():
+def test_dispatch_will_trigger_listener():
     d = Dispatcher()
     l = []
 
-    d.attach('event:name', create_event_handler('first test message'))
-    d.attach('event:name', create_event_handler('second test message'))
+    d.attach('event:name', create_event_listener('first test message'))
+    d.attach('event:name', create_event_listener('second test message'))
 
     d.emit('event:name', l)
 
@@ -23,13 +23,13 @@ def test_dispatch_will_trigger_handler():
 def test_remove_listener():
     d = Dispatcher()
 
-    first_handler = create_event_handler('first test message')
-    second_handler = create_event_handler('second test message')
+    first_listener = create_event_listener('first test message')
+    second_listener = create_event_listener('second test message')
 
-    d.attach('event:name', first_handler)
-    d.attach('event:name', second_handler)
+    d.attach('event:name', first_listener)
+    d.attach('event:name', second_listener)
 
-    d.remove('event:name', second_handler)
+    d.remove('event:name', second_listener)
 
     l = []
     d.emit('event:name', l)
@@ -37,23 +37,20 @@ def test_remove_listener():
     assert len(l) == 1
     assert l[0] == 'first test message'
 
-
 def test_respects_args_and_kwargs():
     d = Dispatcher()
 
-    def create_handler():
-        def handler(l: list, *args, **kwargs):
+    def create_listener():
+        def listener(l: list, *args, **kwargs):
             text = 'args = %s and kwargs = %s' % (args, kwargs)
 
             l.append(text)
             
-        return handler
+        return listener
 
-    d.attach('event:name', create_handler())
+    d.attach('event:name', create_listener())
 
     l = []
     d.emit('event:name', l, 'foo', bar="bar")
 
     assert "args = ('foo',) and kwargs = {'bar': 'bar'}" == l[0]
-    
-
